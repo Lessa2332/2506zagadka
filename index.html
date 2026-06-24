@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🟡 Жовта Станція | Спортивні Загадки</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #FFD700;
+    --yellow-deep: #FFA500;
+    --yellow-light: #FFF9C4;
+    --dark: #1A1200;
+    --dark2: #2D2000;
+    --white: #FFFFFF;
+    --correct: #00C853;
+    --wrong: #FF1744;
+    --neutral: rgba(255,255,255,0.10);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body {
+    width:100%; height:100%; overflow:hidden;
+    font-family: 'Inter', sans-serif;
+    background: var(--dark);
+    touch-action: manipulation;
+  }
+
+  /* BG */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(255,215,0,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 90%, rgba(255,165,0,0.14) 0%, transparent 60%),
+      linear-gradient(160deg, #1A1200 0%, #2D2000 60%, #1A0D00 100%);
+    pointer-events:none; z-index:0;
+  }
+
+  .screen {
+    position:fixed; inset:0;
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    padding: clamp(14px,4vw,40px);
+    z-index:1;
+  }
+  .screen.active { display:flex; }
+
+  /* ═══ INTRO ═══ */
+  #screen-intro { text-align:center; }
+  .station-badge {
+    display:inline-flex; align-items:center; gap:10px;
+    background: rgba(255,215,0,0.12);
+    border: 2px solid var(--yellow);
+    border-radius:100px;
+    padding: clamp(8px,1.5vh,12px) clamp(16px,3vw,28px);
+    font-size: clamp(12px,1.8vw,16px);
+    color: var(--yellow);
+    letter-spacing:.12em;
+    font-weight:600;
+    margin-bottom: clamp(16px,3vh,28px);
+    text-transform:uppercase;
+  }
+  .intro-emoji {
+    font-size: clamp(60px,14vw,130px);
+    display:block;
+    margin-bottom: clamp(10px,2vh,20px);
+    animation: bounce 2s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);}
+  }
+  .intro-title {
+    font-family:'Unbounded',sans-serif;
+    font-size: clamp(24px,5.5vw,64px);
+    font-weight:900;
+    color: var(--yellow);
+    line-height:1.1;
+    margin-bottom: clamp(10px,2vh,18px);
+    text-shadow: 0 4px 30px rgba(255,215,0,0.3);
+  }
+  .intro-sub {
+    font-size: clamp(14px,2.2vw,22px);
+    color:rgba(255,255,255,0.75);
+    max-width:560px;
+    line-height:1.6;
+    margin-bottom: clamp(24px,5vh,48px);
+  }
+  .intro-meta {
+    display:flex; gap:clamp(12px,2.5vw,24px);
+    flex-wrap:wrap; justify-content:center;
+    margin-bottom: clamp(20px,4vh,40px);
+  }
+  .meta-chip {
+    background:rgba(255,215,0,0.10);
+    border:1.5px solid rgba(255,215,0,0.3);
+    border-radius:100px;
+    padding: clamp(7px,1.2vh,11px) clamp(14px,2.5vw,22px);
+    font-size: clamp(12px,1.6vw,15px);
+    color:rgba(255,255,255,0.8);
+  }
+  .btn-start {
+    background: linear-gradient(135deg,var(--yellow),var(--yellow-deep));
+    color: var(--dark);
+    font-family:'Unbounded',sans-serif;
+    font-size: clamp(15px,2.2vw,20px);
+    font-weight:700;
+    padding: clamp(14px,2.5vh,22px) clamp(32px,6vw,70px);
+    border:none; border-radius:100px; cursor:pointer;
+    box-shadow: 0 8px 40px rgba(255,215,0,0.35);
+    transition:all .2s;
+    letter-spacing:.04em;
+  }
+  .btn-start:hover { transform:translateY(-2px); box-shadow:0 14px 50px rgba(255,215,0,0.5); }
+  .btn-start:active { transform:scale(0.96); }
+
+  /* ═══ QUIZ ═══ */
+  #screen-quiz { justify-content:flex-start; padding-top: clamp(14px,3vh,28px); overflow-y:auto; }
+
+  .quiz-topbar {
+    width:100%; max-width:740px;
+    display:flex; align-items:center; gap:clamp(10px,2vw,20px);
+    margin-bottom: clamp(12px,2.5vh,24px);
+    flex-shrink:0;
+  }
+  .quiz-num {
+    font-family:'Unbounded',sans-serif;
+    font-size: clamp(13px,2vw,18px);
+    font-weight:700;
+    color:var(--yellow);
+    white-space:nowrap;
+  }
+  .progress-bar-wrap {
+    flex:1;
+    height: clamp(7px,1.2vh,10px);
+    background:rgba(255,255,255,0.10);
+    border-radius:100px;
+    overflow:hidden;
+  }
+  .progress-bar-fill {
+    height:100%;
+    background: linear-gradient(90deg,var(--yellow),var(--yellow-deep));
+    border-radius:100px;
+    transition: width .5s ease;
+  }
+  .score-badge {
+    font-family:'Unbounded',sans-serif;
+    font-size: clamp(13px,1.8vw,16px);
+    font-weight:700;
+    color:var(--yellow);
+    background:rgba(255,215,0,0.12);
+    border:1.5px solid rgba(255,215,0,0.3);
+    border-radius:100px;
+    padding: clamp(5px,1vh,8px) clamp(12px,2vw,18px);
+    white-space:nowrap;
+  }
+
+  .question-card {
+    width:100%; max-width:740px;
+    background:rgba(255,255,255,0.05);
+    border:1.5px solid rgba(255,215,0,0.20);
+    border-radius: clamp(16px,3vw,28px);
+    padding: clamp(18px,3.5vw,36px);
+    margin-bottom: clamp(14px,2.5vh,24px);
+    flex-shrink:0;
+  }
+
+  .q-category {
+    font-size: clamp(11px,1.5vw,14px);
+    color:var(--yellow);
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    font-weight:600;
+    margin-bottom: clamp(8px,1.5vh,14px);
+    opacity:.8;
+  }
+  .q-emoji {
+    font-size: clamp(36px,8vw,72px);
+    display:block;
+    margin-bottom: clamp(10px,2vh,18px);
+  }
+  .q-text {
+    font-size: clamp(16px,2.8vw,26px);
+    font-weight:600;
+    color:var(--white);
+    line-height:1.5;
+  }
+
+  .options-grid {
+    width:100%; max-width:740px;
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: clamp(10px,1.8vw,16px);
+    margin-bottom: clamp(14px,2.5vh,22px);
+    flex-shrink:0;
+  }
+  @media(max-width:480px) {
+    .options-grid { grid-template-columns:1fr; }
+  }
+
+  .option-btn {
+    background:var(--neutral);
+    border:2px solid rgba(255,255,255,0.15);
+    border-radius: clamp(12px,2vw,20px);
+    padding: clamp(14px,2.5vw,24px) clamp(12px,2vw,20px);
+    cursor:pointer;
+    transition:all .18s;
+    text-align:center;
+    user-select:none;
+    display:flex; flex-direction:column; align-items:center; gap:clamp(8px,1.2vh,12px);
+  }
+  .option-btn:hover { background:rgba(255,215,0,0.12); border-color:rgba(255,215,0,0.4); transform:translateY(-2px); }
+  .option-btn:active { transform:scale(0.97); }
+  .option-btn.correct { background:rgba(0,200,83,0.15); border-color:var(--correct); pointer-events:none; }
+  .option-btn.wrong   { background:rgba(255,23,68,0.12);  border-color:var(--wrong);  pointer-events:none; animation:shake .4s; }
+  .option-btn.disabled { opacity:.4; pointer-events:none; }
+
+  @keyframes shake {
+    0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);}
+  }
+
+  .opt-emoji { font-size: clamp(28px,6vw,52px); }
+  .opt-text  { font-size: clamp(13px,2vw,18px); color:var(--white); font-weight:500; line-height:1.3; }
+
+  .feedback-box {
+    width:100%; max-width:740px;
+    border-radius: clamp(12px,2vw,20px);
+    padding: clamp(14px,2.5vw,22px) clamp(16px,3vw,28px);
+    font-size: clamp(14px,2vw,19px);
+    line-height:1.5;
+    color:var(--white);
+    margin-bottom: clamp(10px,2vh,18px);
+    flex-shrink:0;
+    display:none;
+  }
+  .feedback-box.show { display:block; animation:fadeUp .35s ease; }
+  .feedback-box.correct-fb { background:rgba(0,200,83,0.12); border:1.5px solid var(--correct); }
+  .feedback-box.wrong-fb   { background:rgba(255,23,68,0.10); border:1.5px solid var(--wrong); }
+  .feedback-title { font-family:'Unbounded',sans-serif; font-size:clamp(14px,2.2vw,20px); margin-bottom:6px; }
+
+  .btn-next {
+    background:linear-gradient(135deg,var(--yellow),var(--yellow-deep));
+    color:var(--dark);
+    font-family:'Unbounded',sans-serif;
+    font-size:clamp(14px,2vw,18px);
+    font-weight:700;
+    padding:clamp(12px,2vh,20px) clamp(28px,5vw,60px);
+    border:none; border-radius:100px; cursor:pointer;
+    box-shadow:0 6px 30px rgba(255,215,0,0.3);
+    transition:all .2s;
+    display:none;
+    flex-shrink:0;
+    margin-bottom:clamp(16px,3vh,28px);
+  }
+  .btn-next.show { display:block; animation:fadeUp .35s .1s both; }
+  .btn-next:hover { transform:translateY(-2px); box-shadow:0 10px 40px rgba(255,215,0,0.5); }
+
+  @keyframes fadeUp {
+    from{opacity:0;transform:translateY(16px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+
+  /* ═══ FINISH ═══ */
+  #screen-finish { text-align:center; }
+  .finish-emoji { font-size:clamp(64px,14vw,130px); animation:popIn .6s cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes popIn { 0%{transform:scale(0);} 70%{transform:scale(1.2);} 100%{transform:scale(1);} }
+  .finish-title {
+    font-family:'Unbounded',sans-serif;
+    font-size:clamp(22px,5vw,52px);
+    font-weight:900;
+    color:var(--yellow);
+    margin:clamp(12px,2.5vh,22px) 0;
+    text-shadow:0 4px 30px rgba(255,215,0,0.4);
+  }
+  .finish-score-ring {
+    width:clamp(100px,22vw,180px);
+    height:clamp(100px,22vw,180px);
+    border:clamp(6px,1.2vw,10px) solid var(--yellow);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    margin:0 auto clamp(16px,3vh,28px);
+    box-shadow:0 0 40px rgba(255,215,0,0.3);
+  }
+  .finish-score-num {
+    font-family:'Unbounded',sans-serif;
+    font-size:clamp(28px,7vw,60px);
+    font-weight:900;
+    color:var(--yellow);
+    line-height:1;
+  }
+  .finish-score-label { font-size:clamp(11px,1.6vw,15px); color:rgba(255,255,255,0.6); margin-top:4px; }
+  .finish-text { font-size:clamp(14px,2.2vw,20px); color:rgba(255,255,255,0.8); max-width:520px; line-height:1.6; margin-bottom:clamp(16px,3vh,28px); }
+  .letter-reveal {
+    background:rgba(255,215,0,0.10);
+    border:3px solid var(--yellow);
+    border-radius:20px;
+    padding:clamp(14px,3vh,28px) clamp(24px,6vw,60px);
+    margin-bottom:clamp(20px,4vh,36px);
+    display:inline-block;
+  }
+  .letter-label { font-size:clamp(11px,1.6vw,14px); color:rgba(255,255,255,0.5); letter-spacing:.2em; margin-bottom:8px; }
+  .letter-big {
+    font-family:'Unbounded',sans-serif;
+    font-size:clamp(48px,10vw,100px);
+    font-weight:900;
+    color:var(--yellow);
+    line-height:1;
+    text-shadow:0 0 40px rgba(255,215,0,0.6);
+  }
+  .btn-restart {
+    background:rgba(255,255,255,0.10);
+    color:var(--white);
+    font-family:'Unbounded',sans-serif;
+    font-size:clamp(13px,1.8vw,17px);
+    font-weight:600;
+    padding:clamp(11px,2vh,18px) clamp(24px,4vw,44px);
+    border:1.5px solid rgba(255,255,255,0.2);
+    border-radius:100px; cursor:pointer; transition:all .2s;
+  }
+  .btn-restart:hover { background:rgba(255,255,255,0.18); }
+</style>
+</head>
+<body>
+
+<!-- ═══ INTRO ═══ -->
+<div class="screen active" id="screen-intro">
+  <div class="station-badge">🟡 Жовта Станція</div>
+  <span class="intro-emoji">🏅</span>
+  <div class="intro-title">Спортивні<br>Загадки!</div>
+  <div class="intro-sub">Три рівні загадок про Олімпіаду — від простих до хитрих. Обери правильну відповідь!</div>
+  <div class="intro-meta">
+    <div class="meta-chip">🧩 9 загадок</div>
+    <div class="meta-chip">3️⃣ варіанти відповіді</div>
+    <div class="meta-chip">🎯 1 правильна</div>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">🚀 Розпочати!</button>
+</div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-topbar">
+    <div class="quiz-num" id="q-num">1 / 9</div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="score-badge" id="score-badge">⭐ 0</div>
+  </div>
+  <div class="question-card">
+    <div class="q-category" id="q-cat">Категорія</div>
+    <span class="q-emoji" id="q-emoji">🏅</span>
+    <div class="q-text" id="q-text">Питання</div>
+  </div>
+  <div class="options-grid" id="options-grid"></div>
+  <div class="feedback-box" id="feedback-box">
+    <div class="feedback-title" id="fb-title"></div>
+    <div id="fb-text"></div>
+  </div>
+  <button class="btn-next" id="btn-next" onclick="nextQuestion()">Далі ➜</button>
+</div>
+
+<!-- ═══ FINISH ═══ -->
+<div class="screen" id="screen-finish">
+  <div class="finish-emoji" id="finish-emoji">🏆</div>
+  <div class="finish-title" id="finish-title">Молодець!</div>
+  <div class="finish-score-ring">
+    <div class="finish-score-num" id="finish-num">0</div>
+    <div class="finish-score-label">балів</div>
+  </div>
+  <div class="finish-text" id="finish-text">Ти відмінно впорався!</div>
+  <div class="letter-reveal">
+    <div class="letter-label">БУКВА СТАНЦІЇ</div>
+    <div class="letter-big">Л</div>
+  </div>
+  <button class="btn-restart" onclick="goTo('screen-intro')">🔄 Зіграти знову</button>
+</div>
+
+<script>
+const QUESTIONS = [
+  // ── КАТЕГОРІЯ 1: Де запалюють вогонь ──
+  {
+    cat:'🔥 Олімпійський вогонь', emoji:'🕯️',
+    text:'У якому місті та країні запалюють священний Олімпійський вогонь перед кожною Олімпіадою?',
+    options:[
+      {e:'🏛️', t:'Олімпія, Греція'},
+      {e:'🗼', t:'Париж, Франція'},
+      {e:'🏟️', t:'Афіни, Греція'},
+    ],
+    correct:0,
+    explain:'Олімпійський вогонь завжди запалюють в стародавній Олімпії (Греція) — місті, де народилися перші Олімпійські ігри ще в 776 році до н.е.!'
+  },
+  // ── КАТЕГОРІЯ 1: Кільця ──
+  {
+    cat:'🔵 Олімпійський прапор', emoji:'🏳️',
+    text:'Скільки кілець на Олімпійському прапорі і які вони кольори?',
+    options:[
+      {e:'4️⃣', t:'4 кільця — синє, жовте, червоне, зелене'},
+      {e:'5️⃣', t:'5 кілець — синє, чорне, червоне, жовте, зелене'},
+      {e:'6️⃣', t:'6 кілець — всі кольори веселки'},
+    ],
+    correct:1,
+    explain:'5 кілець — кожне символізує один континент. Разом вони означають єднання спортсменів з усього світу!'
+  },
+  // ── КАТЕГОРІЯ 1: Золота медаль ──
+  {
+    cat:'🥇 Медалі', emoji:'🏅',
+    text:'Як називається головна нагорода за 1-ше місце? Чи зроблена вона повністю з чистого золота?',
+    options:[
+      {e:'✨', t:'Так! Це 100% золото'},
+      {e:'🥈', t:'Ні! Срібло вкрите тонким шаром золота'},
+      {e:'🔶', t:'Ні! Це просто пофарбована бронза'},
+    ],
+    correct:1,
+    explain:'Цікавий факт! «Золота» медаль насправді зроблена зі срібла і вкрита лише 6 г чистого золота. Справжньою суцільною золотою вона була лише на Олімпіаді 1912 року!'
+  },
+  // ── КАТЕГОРІЯ 2: Батут ──
+  {
+    cat:'🤸 Спортивні загадки', emoji:'🎪',
+    text:'Я — пружне полотно у квадраті. Ти падаєш униз, а я тебе викидаю аж під небо. Хто я?',
+    options:[
+      {e:'🛏️', t:'Ліжко'},
+      {e:'🤸', t:'Батут'},
+      {e:'🏐', t:'Сітка'},
+    ],
+    correct:1,
+    explain:'Батут! Стрибки на батуті — олімпійський вид спорту з 2000 року. Спортсмени злітають майже на 10 метрів у висоту!'
+  },
+  // ── КАТЕГОРІЯ 2: Ковзани ──
+  {
+    cat:'⛸️ Зимові спорти', emoji:'❄️',
+    text:'Не чоботи, не сандалі, а на ногах блищать. По льоду витанцьовують, а влітку в шафі сплять.',
+    options:[
+      {e:'👟', t:'Кросівки'},
+      {e:'⛸️', t:'Ковзани'},
+      {e:'🥿', t:'Лижні черевики'},
+    ],
+    correct:1,
+    explain:'Ковзани! Фігурне катання та ковзанярський спорт — одні з найстаріших зимових олімпійських дисциплін. Перші ковзани були зроблені ще з кісток тварин!'
+  },
+  // ── КАТЕГОРІЯ 2: Штанга ──
+  {
+    cat:'💪 Важка атлетика', emoji:'🏋️',
+    text:'Два важкі млинці на довгій палиці. Спортсмен їх піднімає — м\'язи напружує.',
+    options:[
+      {e:'🎾', t:'Ракетка'},
+      {e:'🏋️', t:'Штанга'},
+      {e:'🎿', t:'Лижа'},
+    ],
+    correct:1,
+    explain:'Штанга! Важка атлетика — один з найдовших олімпійських видів спорту. Рекорд світу у важчій вазі — понад 480 кг сумарно. Ось це сила!'
+  },
+  // ── КАТЕГОРІЯ 3: Іванко ──
+  {
+    cat:'🧠 Логічні задачі', emoji:'🏃',
+    text:'У змаганнях з бігу Іванко обігнав хлопця, який біг другим. Яке місце тепер займає Іванко?',
+    options:[
+      {e:'🥇', t:'Перше місце'},
+      {e:'🥈', t:'Друге місце'},
+      {e:'🥉', t:'Третє місце'},
+    ],
+    correct:1,
+    explain:'Друге! Іванко обігнав того, хто був другим — отже, сам посів його місце. Перший бігун так і залишився попереду. Хитра задачка!'
+  },
+  // ── КАТЕГОРІЯ 3: Кг ──
+  {
+    cat:'🧠 Логічні задачі', emoji:'⚖️',
+    text:'Що важче: 1 кг золотих олімпійських медалей чи 1 кг вати?',
+    options:[
+      {e:'🥇', t:'1 кг медалей важчий'},
+      {e:'🩶', t:'1 кг вати важчий'},
+      {e:'⚖️', t:'Однаково — обидва 1 кг!'},
+    ],
+    correct:2,
+    explain:'Однаково! Якщо маса 1 кг — то вага скрізь однакова, незалежно від матеріалу. Це класична олімпійська хитрість!'
+  },
+  // ── КАТЕГОРІЯ 3: Басейн ──
+  {
+    cat:'🏊 Плавання', emoji:'🏊',
+    text:'Довжина басейну — 50 м. Скільки разів треба переплисти туди-назад, щоб подолати 200 м?',
+    options:[
+      {e:'1️⃣', t:'1 раз (туди і назад)'},
+      {e:'2️⃣', t:'2 рази (туди-назад = 100м × 2)'},
+      {e:'4️⃣', t:'4 рази (по 50м кожен)'},
+    ],
+    correct:1,
+    explain:'2 рази! «Туди-назад» — це 50 + 50 = 100 метрів. Щоб проплисти 200 метрів — треба 2 такі відрізки. На Олімпіаді є дистанція 200 м вільним стилем!'
+  },
+];
+
+let currentQ = 0;
+let score = 0;
+let answered = false;
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startQuiz() {
+  currentQ = 0; score = 0; answered = false;
+  renderQuestion();
+  goTo('screen-quiz');
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  answered = false;
+
+  document.getElementById('q-num').textContent = `${currentQ+1} / ${QUESTIONS.length}`;
+  document.getElementById('progress-fill').style.width = (currentQ / QUESTIONS.length * 100) + '%';
+  document.getElementById('score-badge').textContent = `⭐ ${score}`;
+  document.getElementById('q-cat').textContent = q.cat;
+  document.getElementById('q-emoji').textContent = q.emoji;
+  document.getElementById('q-text').textContent = q.text;
+
+  const fb = document.getElementById('feedback-box');
+  fb.className = 'feedback-box'; fb.style.display='none';
+  document.getElementById('btn-next').className = 'btn-next';
+
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="opt-emoji">${opt.e}</span><span class="opt-text">${opt.t}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    grid.appendChild(btn);
+  });
+}
+
+function selectAnswer(i) {
+  if (answered) return;
+  answered = true;
+  const q = QUESTIONS[currentQ];
+  const btns = document.querySelectorAll('.option-btn');
+  const isCorrect = i === q.correct;
+
+  btns.forEach((btn, idx) => {
+    if (idx === q.correct) btn.classList.add('correct');
+    else if (idx === i && !isCorrect) btn.classList.add('wrong');
+    else btn.classList.add('disabled');
+  });
+
+  if (isCorrect) score += 10;
+
+  const fb = document.getElementById('feedback-box');
+  fb.className = 'feedback-box show ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
+  fb.style.display = 'block';
+  document.getElementById('fb-title').textContent = isCorrect ? '✅ Правильно!' : '❌ Не зовсім...';
+  document.getElementById('fb-text').textContent = q.explain;
+
+  document.getElementById('btn-next').className = 'btn-next show';
+  document.getElementById('btn-next').textContent = currentQ < QUESTIONS.length-1 ? 'Далі ➜' : '🏁 Результат!';
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= QUESTIONS.length) {
+    showFinish();
+  } else {
+    document.getElementById('progress-fill').style.width = (currentQ / QUESTIONS.length * 100) + '%';
+    document.getElementById('score-badge').textContent = `⭐ ${score}`;
+    renderQuestion();
+  }
+}
+
+function showFinish() {
+  const pct = score / (QUESTIONS.length * 10);
+  let emoji = '🏆', title = 'Чемпіон!', text;
+  if (pct >= 0.9) {
+    emoji = '🥇'; title = 'Олімпійська легенда!';
+    text = `${score} балів з ${QUESTIONS.length*10}! Ти знаєш про Олімпіаду краще за суддів!`;
+  } else if (pct >= 0.6) {
+    emoji = '🥈'; title = 'Молодець!';
+    text = `${score} балів! Ти добре знаєш спорт. Ще трохи тренувань — і станеш чемпіоном!`;
+  } else {
+    emoji = '🥉'; title = 'Гарна спроба!';
+    text = `${score} балів! Тепер ти знаєш більше про Олімпійські ігри. Спробуй ще раз!`;
+  }
+  document.getElementById('finish-emoji').textContent = emoji;
+  document.getElementById('finish-title').textContent = title;
+  document.getElementById('finish-num').textContent = score;
+  document.getElementById('finish-text').textContent = text;
+  goTo('screen-finish');
+}
+</script>
+</body>
+</html>
