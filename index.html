@@ -323,7 +323,7 @@
 <!-- ═══ INTRO ═══ -->
 <div class="screen active" id="screen-intro">
   <div class="station-badge">🟡 Жовта Станція</div>
-  <span class="intro-emoji">🏅</span>
+  <span class="intro-emoji">🔥</span>
   <div class="intro-title">Спортивні<br>Загадки!</div>
   <div class="intro-sub">Три рівні загадок про Олімпіаду — від простих до хитрих. Обери правильну відповідь!</div>
   <div class="intro-meta">
@@ -343,7 +343,7 @@
   </div>
   <div class="question-card">
     <div class="q-category" id="q-cat">Категорія</div>
-    <span class="q-emoji" id="q-emoji">🏅</span>
+    <span class="q-emoji" id="q-emoji">олімпійці</span>
     <div class="q-text" id="q-text">Питання</div>
   </div>
   <div class="options-grid" id="options-grid"></div>
@@ -398,7 +398,7 @@ const QUESTIONS = [
   },
   // ── КАТЕГОРІЯ 1: Золота медаль ──
   {
-    cat:'🥇 Медалі', emoji:'🏅',
+    cat:'🥇 Медалі', emoji:'🔥',
     text:'Як називається головна нагорода за 1-ше місце? Чи зроблена вона повністю з чистого золота?',
     options:[
       {e:'✨', t:'Так! Це 100% золото'},
@@ -561,12 +561,12 @@ function nextQuestion() {
 
 function showFinish() {
   const pct = score / (QUESTIONS.length * 10);
-  let emoji = '🏆', title = 'Чемпіон!', text;
+  let emoji = '🏆', title = 'Чемпіони!', text;
   if (pct >= 0.9) {
     emoji = '🥇'; title = 'Олімпійська легенда!';
     text = `${score} балів з ${QUESTIONS.length*10}! Ти знаєш про Олімпіаду краще за суддів!`;
   } else if (pct >= 0.6) {
-    emoji = '🥈'; title = 'Молодець!';
+    emoji = '🔥'; title = 'Молодці!';
     text = `${score} балів! Ти добре знаєш спорт. Ще трохи тренувань — і станеш чемпіоном!`;
   } else {
     emoji = '🥉'; title = 'Гарна спроба!';
